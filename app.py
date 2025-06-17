@@ -14,42 +14,50 @@ option = st.sidebar.radio("Go to", ["🏠 Home", "📁 Dataset", "📊 Visualiza
 
 # Title
 st.markdown("<h1 style='text-align: center;'>Batsman runs prediction</h1>", unsafe_allow_html=True)
-if option == "🏠 Home":
-    st.title("🏏 Batsman Runs Prediction")
 
+if option == "🏠 Home":
+    st.title("Welcome to the Batsman Runs Prediction App")
+
+    # Custom CSS
     st.markdown("""
     <style>
     .big-font {
         font-size:22px !important;
+        font-weight: 600;
+        margin-top: 20px;
     }
     .small-font {
         font-size:16px !important;
         color: #6c757d;
     }
+    ul li {
+        margin-bottom: 10px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<p class='big-font'>🔍 What this app does:</p>", unsafe_allow_html=True)
+    # Description
+    st.markdown("<p class='big-font'>🔍 What this app offers:</p>", unsafe_allow_html=True)
 
     st.markdown("""
-    - 📊 **Displays dataset** used for training the Runs Predictor model.
-    - 📈 **Visualizes batting trends** such as Strike Rate, Runs vs Balls Faced, etc.
-    - 🧠 **Predicts total career runs** using:
-        - 🤖 Random Forest
+    - 📂 **View the dataset** used for training the prediction model.
+    - 📊 **Explore batting insights** such as Strike Rate trends, Runs vs Balls Faced, etc.
+    - 🤖 **Predict a batsman's total career runs** using:
+        - 🌲 Random Forest Regressor
         - 📉 Linear Regression
 
     ---
-
-    👉 Use the **sidebar** to navigate through:
-    - `📁 Dataset`
-    - `📊 Visualizations`
-    - `🧠 Predictor`
+    
+    <p class='big-font'>🧭 How to use:</p>
+    - Use the **sidebar** to navigate:
+        - `📁 Dataset`
+        - `📊 Visualizations`
+        - `🧠 Predictor`
 
     ---
-    
-    👨‍💻 <span class='small-font'>Developed by: <b>P. Rohith</b>, <b>MD. Sandhani</b>, <b>SK. Jahiruddin</b></span>
-    """, unsafe_allow_html=True)
 
+    👨‍💻 <span class='small-font'>Developed by: <b>P. Rohith</b>, <b>MD. Sandhani</b>, and <b>SK. Jahiruddin</b></span>
+    """, unsafe_allow_html=True)
 
 
 # Dataset
@@ -87,23 +95,24 @@ elif option == "📊 Visualizations":
 
 # Predictor
 elif option == "🧠 Predictor":
-    st.subheader("🏏 Predict Total Career Runs")
+    st.subheader("⚙️ Choose Model")
+    model_choice = st.radio("Select Model", ["Linear Regression", "Random Forest"])
 
     # Load models and scaler
-    rf = joblib.load("runs_model.pkl")  # Random Forest model
-    best_lr = joblib.load("linear_model.pkl")  # Linear Regression model
-    scaler = joblib.load("runs_scaler.pkl")  # StandardScaler
+    rf_model = joblib.load("runs_model.pkl")         # Random Forest
+    lr_model = joblib.load("linear_model.pkl")       # Linear Regression
+    scaler = joblib.load("runs_scaler.pkl")          # StandardScaler
 
     st.markdown("### 📥 Enter the Batsman's Career Stats:")
 
     col1, col2 = st.columns(2)
     with col1:
-        innings = st.number_input("Innings Played", min_value=0, value=10)
-        notouts = st.number_input("Not Outs", min_value=0, value=2)
-        bf = st.number_input("Balls Faced (BF)", min_value=0, value=500)
+        innings = st.number_input("Innings Played", min_value=0)
+        notouts = st.number_input("Not Outs", min_value=0)
+        bf = st.number_input("Balls Faced (BF)", min_value=0)
     with col2:
-        centuries = st.number_input("No. of 100s", min_value=0, value=1)
-        half_centuries = st.number_input("No. of 50s", min_value=0, value=3)
+        centuries = st.number_input("No. of 100s", min_value=0)
+        half_centuries = st.number_input("No. of 50s", min_value=0)
 
     if st.button("🚀 Predict Runs"):
         try:
@@ -111,13 +120,13 @@ elif option == "🧠 Predictor":
             input_data = np.array([[innings, notouts, bf, centuries, half_centuries]])
             input_scaled = scaler.transform(input_data)
 
-            # Predict with both models
-            pred_rf = best_rf.predict(input_scaled)[0]
-            pred_lr = lr.predict(input_scaled)[0]
-
-            # Display Results
-            st.success(f"🌲 Random Forest Prediction: **{int(round(pred_rf))} runs**")
-            st.info(f"📉 Linear Regression Prediction: **{int(round(pred_lr))} runs**")
+            # Predict using selected model
+            if model_choice == "Linear Regression":
+                prediction = lr_model.predict(input_scaled)[0]
+                st.success(f"📉 Predicted Runs (Linear Regression): **{int(round(prediction))} runs**")
+            else:
+                prediction = rf_model.predict(input_scaled)[0]
+                st.success(f"🌲 Predicted Runs (Random Forest): **{int(round(prediction))} runs**")
 
         except Exception as e:
             st.error(f"⚠️ Prediction failed. Error: {e}")
